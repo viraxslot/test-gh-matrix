@@ -29,6 +29,7 @@ jobs:
   previous_result:
     runs-on: ubuntu-latest
     needs: test
+    if: always()
     steps:
       - name: Print result from other job
         id: print-job-results
