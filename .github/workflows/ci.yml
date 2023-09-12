@@ -22,3 +22,12 @@ jobs:
         id: print-results
         run: |
           echo "${{ steps.gen-results.outcome }}"
+    
+  previous_result:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Print result from other job
+        id: print-job-results
+        run: |
+          echo "${{ needs.test.outputs.run_result }}"
