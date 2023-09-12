@@ -16,7 +16,10 @@ jobs:
       - name: Generate results
         id: gen-results
         run: |
-          echo "test"
+          echo "${{ matrix.shard }}"
+          if [ "${{ matrix.shard }}" = "2/3" ]; then
+            exit 1
+          fi
 
       - name: Print results
         id: print-results
