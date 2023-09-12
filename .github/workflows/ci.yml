@@ -6,32 +6,55 @@ jobs:
   test:
     runs-on: ubuntu-latest
     outputs:
-      run_result: "${{ steps.gen-results.outcome == 'success' && 'PASSED' || 'FAILED' }}"
+      run_result: "${{ steps.gen-results.outputs[format('step-result{0}', matrix.shard)] }}"
     strategy:
       fail-fast: false
       matrix:
-        shard: [1/3, 2/3, 3/3]
+        shard: [1-3, 2-3, 3-3]
 
     steps:
       - name: Generate results
         id: gen-results
         run: |
           echo "${{ matrix.shard }}"
-          if [ "${{ matrix.shard }}" = "2/3" ]; then
+          if [ "${{ matrix.shard }}" = "2-3" ]; then
             exit 1
           fi
 
-      - name: Print results
-        id: print-results
+      - name: Save result to file
         run: |
-          echo "${{ steps.gen-results.outcome }}"
-    
+          echo "${{ steps.gen-results.outcome }}" >> result-"${{ matrix.shard }}"
+          ls
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: "job-status-${{ matrix.shard }}"
+          path: result-"${{ matrix.shard }}"
+
   previous_result:
     runs-on: ubuntu-latest
     needs: test
     if: always()
     steps:
-      - name: Print result from other job
-        id: print-job-results
+      - uses: actions/download-artifact@v3
+        with:
+          path: results
+
+      - name: Iterate files
+        shell: bash
         run: |
-          echo "${{ needs.test.outputs.run_result }}"
+          ls results
+          final="PASSED"
+          for file in "results"/*
+          do
+              line=$(head -n 1 file)
+              echo $line
+              if [ "$line" != "success" ]; then
+                 final="FAILED"
+                 break;
+              fi
+          done
+
+          print "Result: "$final
