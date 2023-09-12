@@ -22,6 +22,7 @@ jobs:
           fi
 
       - name: Save result to file
+        if: always()
         run: |
           echo "${{ steps.gen-results.outcome }}" >> result-"${{ matrix.shard }}"
           ls
@@ -40,6 +41,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v3
         with:
+          retention-days: 1
           path: results
 
       - name: Iterate files
