@@ -1,0 +1,24 @@
+name: Check matrix results
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    outputs:
+      run_result: "${{ steps.gen-results.outcome == 'success' && 'PASSED' || 'FAILED' }}"
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1/3, 2/3, 3/3]
+
+    steps:
+      - name: Generate results
+        id: gen-results
+        run: |
+          echo "test"
+
+      - name: Print results
+        id: print-results
+        run: |
+          echo "${{ steps.gen-results.outcome }}"
